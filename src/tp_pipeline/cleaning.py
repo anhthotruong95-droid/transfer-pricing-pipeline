@@ -36,6 +36,12 @@ def clean_transaction_row(row: dict,gl_mapping:dict):
     "TransactionGroup": transaction_group
 }
 
+def get_transaction_group(gl_account, gl_mapping):
+    try:
+        return gl_mapping[gl_account]
+    except KeyError:
+        raise MappingNotFoundError(f"GL account '{gl_account}' has no entry in mapping_gl_accounts.xlsx")
+
 if __name__=="__main__":
     import sys
     from pathlib import Path
@@ -43,8 +49,16 @@ if __name__=="__main__":
     
     from tp_pipeline.data_io import read_entity_master, read_mapping_gl_accounts, read_erp_export
     from tp_pipeline.lookups import build_gl_account_mapping_lookup
+    from tp_pipeline.exceptions import MappingNotFoundError
 
     gl_mapping = build_gl_account_mapping_lookup(read_mapping_gl_accounts())
     erp_df = read_erp_export()
     show_row = erp_df.iloc[10].to_dict()   # <- eine einzelne Zeile als Dictionary
     print(clean_transaction_row(show_row, gl_mapping))
+
+    gl_mapping = {"4000": "Distribution"}
+    print(get_transaction_group("4000", gl_mapping))
+    try:
+        get_transaction_group("4900", gl_mapping)
+    except MappingNotFoundError as e:
+        print("Caught error:", e)
