@@ -1,12 +1,10 @@
 """
-
 models.py
 -------------
 Defines the domain model: Transaction (a single cleaned journal posting),
 Entity (a legal entity with its P&L and derived TP classification), and
 TPDataset (the container that holds every Transaction and Entity the
 pipeline works with).
-
 """
 
 class Transaction:
@@ -35,14 +33,13 @@ class Entity:
         self.region = region
         self.currency = currency
 
-        self.period = None            # <- kommt erst mit load_financials
+        self.period = None
         self.revenue = 0.0
         self.cogs = 0.0
         self.sga = 0.0
         self.rd = 0.0
         self.other_opex = 0.0
-        self.royalty_paid = 0.0
-        self.functional_role = "Unknown"
+        self.functional_role = {}
 
     def load_financials(self, row):
         self.period = row["Period"]
@@ -72,14 +69,32 @@ class Entity:
         else:
             return round((self.revenue-total_costs) / total_costs * 100, 2)
 
-    @property 
-    def royalty_rate_pct(self):
+    @property
+    def revenue_lc(self):
+        return self.revenue
 
-        if self.revenue==0:
-            return 0
-        else:
-            return round(self.royalty_paid / self.revenue * 100, 2)
-        
+    @property
+    def operating_profit_lc(self):
+        return self.operating_profit
+
+    def revenue_eur(self, fx_rate_lookup):
+        return round(self.revenue * fx_rate_lookup[self.currency], 2)
+
+    def operating_profit_eur(self, fx_rate_lookup):
+        return round(self.operating_profit * fx_rate_lookup[self.currency], 2)
+
+    def cogs_eur(self, fx_rate_lookup):
+        return round(self.cogs * fx_rate_lookup[self.currency], 2)
+
+    def sga_eur(self, fx_rate_lookup):
+        return round(self.sga * fx_rate_lookup[self.currency], 2)
+
+    def rd_eur(self, fx_rate_lookup):
+        return round(self.rd * fx_rate_lookup[self.currency], 2)
+
+    def other_opex_eur(self, fx_rate_lookup):
+        return round(self.other_opex * fx_rate_lookup[self.currency], 2)
+
 class TPDataset:
 
     def __init__(self):
@@ -109,21 +124,20 @@ if __name__ == "__main__":
     print(tx.__dict__)
 
     de01 = Entity(company_code="DE01", entity_name="PharmaCorp Deutschland GmbH", country_name="Germany", region="EMEA", currency="EUR")
-    print(de01.__dict__)   # zeigt: alles noch auf 0.0, functional_role "Unknown"
+    de01.load_financials({"Revenue": 445521.63, "COGS": 380087.42, "SGA": 40365.04, "RD": 0.0, "OtherOpex": 9490.96, "Period": "FY2025"})
 
-    de01.royalty_paid = 8361.54
-
-    de01.load_financials({"Revenue": 445521.63, "COGS": 380087.42, "SGA": 40365.04, "RD": 0.0, "OtherOpex": 9490.96, "Period":"FY2025"})
-    print(de01.__dict__)   
-    
+    print(de01.__dict__)
     print(de01.operating_margin_pct)
-    print(de01.royalty_rate_pct)
+    print(de01.revenue_lc)
+    print(de01.operating_profit_lc)
+
+    fx_rate_lookup = {"EUR": 1.0, "USD": 0.92, "CHF": 1.04, "SGD": 0.68}
+    print(de01.revenue_eur(fx_rate_lookup))
+    print(de01.operating_profit_eur(fx_rate_lookup))
 
     dataset = TPDataset()
     dataset.add_transaction(tx)
     dataset.register_entity(de01)
 
-    print(dataset.transactions)
-    print(dataset.entities)
     print(dataset.grand_total_journal())
     print(dataset.grand_total_revenue())

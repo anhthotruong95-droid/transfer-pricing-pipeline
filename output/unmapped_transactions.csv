@@ -1,17 +1,33 @@
-TransactionID,PostingDate,BookingText,CompanyCode,PartnerCompanyCode,GLAccount,TransactionType,Amount,Currency,IsIntercompany,error
-TX00120,2025-02-02,Sonstige Kosten - noch nicht klassifiziert,CH04,FR03,4900,Credit Note,4910.19,CHF,True,GL account '4900' has no entry in mapping_gl_accounts.xlsx - ask Accounting to classify it.
-TX00121,2025-05-11,Sonstige Kosten - noch nicht klassifiziert,DE01,US02,4900,Credit Note,2078.82,EUR,True,GL account '4900' has no entry in mapping_gl_accounts.xlsx - ask Accounting to classify it.
-TX00122,2025-06-29,Sonstige Kosten - noch nicht klassifiziert,US02,,4900,Credit Note,363.82,USD,False,GL account '4900' has no entry in mapping_gl_accounts.xlsx - ask Accounting to classify it.
-TX00123,2025-03-28,Sonstige Kosten - noch nicht klassifiziert,SG01,,4900,Credit Note,3602.26,SGD,False,GL account '4900' has no entry in mapping_gl_accounts.xlsx - ask Accounting to classify it.
-TX00124,2025-10-05,Sonstige Kosten - noch nicht klassifiziert,CH04,SG01,4900,Credit Note,4922.98,CHF,True,GL account '4900' has no entry in mapping_gl_accounts.xlsx - ask Accounting to classify it.
-TX00125,2025-11-25,Sonstige Kosten - noch nicht klassifiziert,US02,CH04,4900,Invoice,2232.77,USD,True,GL account '4900' has no entry in mapping_gl_accounts.xlsx - ask Accounting to classify it.
-TX00126,2025-09-30,Sonstige Kosten - noch nicht klassifiziert,US05,US02,4900,Invoice,3179.09,USD,True,GL account '4900' has no entry in mapping_gl_accounts.xlsx - ask Accounting to classify it.
-TX00127,2025-05-18,Sonstige Kosten - noch nicht klassifiziert,SG01,CH04,4900,Credit Note,4289.28,SGD,True,GL account '4900' has no entry in mapping_gl_accounts.xlsx - ask Accounting to classify it.
-TX00128,2025-06-23,Sonstige Kosten - noch nicht klassifiziert,SG01,US05,4900,Credit Note,2265.47,SGD,True,GL account '4900' has no entry in mapping_gl_accounts.xlsx - ask Accounting to classify it.
-TX00129,2025-02-02,Sonstige Kosten - noch nicht klassifiziert,SG01,US02,4900,Invoice,1256.96,SGD,True,GL account '4900' has no entry in mapping_gl_accounts.xlsx - ask Accounting to classify it.
-TX00130,2025-12-23,Sonstige Kosten - noch nicht klassifiziert,SG01,CH04,4900,Invoice,3401.87,SGD,True,GL account '4900' has no entry in mapping_gl_accounts.xlsx - ask Accounting to classify it.
-TX00131,2025-02-11,Sonstige Kosten - noch nicht klassifiziert,US05,DE01,4900,Invoice,731.86,USD,True,GL account '4900' has no entry in mapping_gl_accounts.xlsx - ask Accounting to classify it.
-TX00132,2025-09-19,Sonstige Kosten - noch nicht klassifiziert,US02,,4900,Invoice,2488.96,USD,False,GL account '4900' has no entry in mapping_gl_accounts.xlsx - ask Accounting to classify it.
-TX00133,2025-11-22,Sonstige Kosten - noch nicht klassifiziert,US05,DE01,4900,Credit Note,2814.21,USD,True,GL account '4900' has no entry in mapping_gl_accounts.xlsx - ask Accounting to classify it.
-TX00134,2025-12-04,Sonstige Kosten - noch nicht klassifiziert,SG01,US02,4900,Invoice,4402.62,SGD,True,GL account '4900' has no entry in mapping_gl_accounts.xlsx - ask Accounting to classify it.
-TX00135,2025-04-01,Sonstige Kosten - noch nicht klassifiziert,SG01,,4900,Invoice,540.1,SGD,False,GL account '4900' has no entry in mapping_gl_accounts.xlsx - ask Accounting to classify it.
+TransactionID,PostingDate,BookingText,CompanyCode,PartnerCompanyCode,GLAccount,TransactionType,Amount,Currency,error
+TX00182,2025-10-03,Sonstige Kosten - noch nicht klassifiziert,DE01,,4900,Invoice,2184.33,EUR,GL account '4900' has no entry in mapping_gl_accounts.xlsx
+TX00183,2025-09-29,Sonstige Kosten - noch nicht klassifiziert,CH04,,4900,Invoice,2763.22,CHF,GL account '4900' has no entry in mapping_gl_accounts.xlsx
+TX00184,2025-04-30,Sonstige Kosten - noch nicht klassifiziert,CH04,SG01,4900,Invoice,3136.21,CHF,GL account '4900' has no entry in mapping_gl_accounts.xlsx
+TX00185,2025-06-11,Sonstige Kosten - noch nicht klassifiziert,SG01,,4900,Invoice,4090.44,SGD,GL account '4900' has no entry in mapping_gl_accounts.xlsx
+TX00186,2025-04-22,Sonstige Kosten - noch nicht klassifiziert,FR03,US05,4900,Invoice,4475.08,EUR,GL account '4900' has no entry in mapping_gl_accounts.xlsx
+TX00187,2025-03-09,Sonstige Kosten - noch nicht klassifiziert,CH04,US02,4900,Invoice,842.87,CHF,GL account '4900' has no entry in mapping_gl_accounts.xlsx
+TX00188,2025-08-11,Sonstige Kosten - noch nicht klassifiziert,SG01,US02,4900,Invoice,1445.59,SGD,GL account '4900' has no entry in mapping_gl_accounts.xlsx
+TX00189,2025-04-13,Sonstige Kosten - noch nicht klassifiziert,DE01,SG01,4900,Invoice,3991.69,EUR,GL account '4900' has no entry in mapping_gl_accounts.xlsx
+TX00190,2025-02-19,Sonstige Kosten - noch nicht klassifiziert,DE01,,4900,Invoice,3489.03,EUR,GL account '4900' has no entry in mapping_gl_accounts.xlsx
+TX00191,2025-03-01,Sonstige Kosten - noch nicht klassifiziert,CH04,SG01,4900,Credit Note,3475.44,CHF,GL account '4900' has no entry in mapping_gl_accounts.xlsx
+TX00192,2025-09-15,Sonstige Kosten - noch nicht klassifiziert,SG01,FR03,4900,Credit Note,3246.38,SGD,GL account '4900' has no entry in mapping_gl_accounts.xlsx
+TX00193,2025-02-24,Sonstige Kosten - noch nicht klassifiziert,SG01,CH04,4900,Credit Note,4053.65,SGD,GL account '4900' has no entry in mapping_gl_accounts.xlsx
+TX00194,2025-03-17,Sonstige Kosten - noch nicht klassifiziert,US02,CH04,4900,Credit Note,3857.59,USD,GL account '4900' has no entry in mapping_gl_accounts.xlsx
+TX00195,2025-03-22,Sonstige Kosten - noch nicht klassifiziert,CH04,US05,4900,Invoice,751.75,CHF,GL account '4900' has no entry in mapping_gl_accounts.xlsx
+TX00196,2025-03-10,Sonstige Kosten - noch nicht klassifiziert,US05,,4900,Invoice,657.18,USD,GL account '4900' has no entry in mapping_gl_accounts.xlsx
+TX00197,2025-06-17,Sonstige Kosten - noch nicht klassifiziert,SG01,DE01,4900,Invoice,572.51,SGD,GL account '4900' has no entry in mapping_gl_accounts.xlsx
+TX00198,2025-08-09,Sonstige Kosten - noch nicht klassifiziert,DE01,FR03,4900,Credit Note,2246.93,EUR,GL account '4900' has no entry in mapping_gl_accounts.xlsx
+TX00199,2025-04-13,Sonstige Kosten - noch nicht klassifiziert,CH04,SG01,4900,Invoice,1991.14,CHF,GL account '4900' has no entry in mapping_gl_accounts.xlsx
+TX00200,2025-07-27,Sonstige Kosten - noch nicht klassifiziert,CH04,FR03,4900,Credit Note,2378.96,CHF,GL account '4900' has no entry in mapping_gl_accounts.xlsx
+TX00201,2025-06-15,Sonstige Kosten - noch nicht klassifiziert,CH04,SG01,4900,Invoice,992.37,CHF,GL account '4900' has no entry in mapping_gl_accounts.xlsx
+TX00202,2025-10-19,Sonstige Kosten - noch nicht klassifiziert,US02,,4900,Credit Note,4403.01,USD,GL account '4900' has no entry in mapping_gl_accounts.xlsx
+TX00203,2025-05-13,Sonstige Kosten - noch nicht klassifiziert,FR03,CH04,4900,Credit Note,2620.59,EUR,GL account '4900' has no entry in mapping_gl_accounts.xlsx
+TX00204,2025-07-27,Sonstige Kosten - noch nicht klassifiziert,US05,US02,4900,Invoice,3773.29,USD,GL account '4900' has no entry in mapping_gl_accounts.xlsx
+TX00205,2025-08-10,Sonstige Kosten - noch nicht klassifiziert,CH04,DE01,4900,Credit Note,4423.24,CHF,GL account '4900' has no entry in mapping_gl_accounts.xlsx
+TX00206,2025-02-06,Sonstige Kosten - noch nicht klassifiziert,CH04,FR03,4900,Invoice,1192.78,CHF,GL account '4900' has no entry in mapping_gl_accounts.xlsx
+TX00207,2025-07-02,Sonstige Kosten - noch nicht klassifiziert,US05,DE01,4900,Invoice,2450.43,USD,GL account '4900' has no entry in mapping_gl_accounts.xlsx
+TX00208,2025-12-08,Sonstige Kosten - noch nicht klassifiziert,SG01,FR03,4900,Credit Note,437.94,SGD,GL account '4900' has no entry in mapping_gl_accounts.xlsx
+TX00209,2025-10-19,Sonstige Kosten - noch nicht klassifiziert,US05,DE01,4900,Credit Note,1237.03,USD,GL account '4900' has no entry in mapping_gl_accounts.xlsx
+TX00210,2025-11-25,Sonstige Kosten - noch nicht klassifiziert,CH04,SG01,4900,Credit Note,568.8,CHF,GL account '4900' has no entry in mapping_gl_accounts.xlsx
+TX00211,2025-10-22,Sonstige Kosten - noch nicht klassifiziert,CH04,,4900,Credit Note,774.13,CHF,GL account '4900' has no entry in mapping_gl_accounts.xlsx
+TX00212,2025-05-12,Sonstige Kosten - noch nicht klassifiziert,US02,CH04,4900,Invoice,3153.9,USD,GL account '4900' has no entry in mapping_gl_accounts.xlsx
+TX00213,2025-11-28,Sonstige Kosten - noch nicht klassifiziert,DE01,FR03,4900,Invoice,2622.85,EUR,GL account '4900' has no entry in mapping_gl_accounts.xlsx

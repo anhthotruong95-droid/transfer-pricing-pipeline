@@ -1,41 +1,14 @@
 """
 generate_sample_data.py
 ------------------------
-Creates all 6 Excel files the pharma Transfer Pricing pipeline consumes:
+Creates the 5 Excel files for the pharma Transfer Pricing pipeline
+(Distribution and Contract Manufacturing only).
 
-  1. raw_erp_export.xlsx          - SAP-style journal, transaction level
-  2. entity_financials.xlsx       - a REAL, simple P&L per legal entity
-                                     (Revenue/COGS/SGA/RD/OtherOpex - one
-                                     revenue line, no group split - that
-                                     split is derived from the journal)
-  3. mapping_gl_accounts.xlsx     - GL account -> Transaction Group
-  4. benchmark_studies.xlsx       - Region-aware benchmark studies with
-                                     Min/LowerQuartile/Median/UpperQuartile/
-                                     Max/NumberOfComparables
-  5. entity_master.xlsx           - legal entity master data incl. Region
-  6. fx_rates.xlsx                - currency -> EUR conversion rate
-
-Design rule that keeps the whole pipeline reconcilable:
-  CompanyCode = the entity that RAISES the invoice / recognizes the amount
-  as revenue in the journal. PartnerCompanyCode = the intercompany
-  counterparty, blank if the counterparty is a third party.
-
-Group structure (pharma "Principal structure", 6 entities, 3 regions):
-  US02  = Principal              (Americas) - owns IP, not benchmarked (residual profit)
-  US05  = Distributor             (Americas) - NEW: separate from the Principal
-  DE01  = Distributor             (EMEA)
-  FR03  = Distributor             (EMEA)
-  SG01  = Distributor             (APAC)
-  CH04  = Contract Manufacturer   (EMEA) - benchmarked on Full Cost Mark-up, not Operating Margin
-
-Amounts are TARGET-DRIVEN: for each entity we decide the metric we want it
-to land at, then derive the journal amounts backward from that target.
-This run deliberately places:
-  - US05's operating margin BELOW the Americas benchmark Min (a genuine
-    outlier - narrative: newly launched distributor still ramping up)
-  - FR03's royalty rate just ABOVE the global Upper Quartile but inside
-    Max (a "grey zone" worth reviewing, not yet a hard outlier)
-  - everyone else comfortably inside their interquartile range
+Every entity's own P&L (entity_financials.xlsx) is denominated in ITS OWN
+local currency. Whenever an invoice crosses between two entities with
+different currencies, the journal amount is FX-converted into the
+INVOICING party's currency, so that both files tie out consistently once
+converted to a common reporting currency (EUR).
 """
 
 import random
@@ -43,7 +16,7 @@ from datetime import date, timedelta
 
 import pandas as pd
 
-random.seed(23)
+random.seed(11)
 
 OUT_DIR = "data"
 
@@ -54,6 +27,13 @@ DISTRIBUTORS = ["US05", "DE01", "FR03", "SG01"]
 CURRENCY_BY_ENTITY = {"US02": "USD", "US05": "USD", "CH04": "CHF", "DE01": "EUR", "FR03": "EUR", "SG01": "SGD"}
 REGION_BY_ENTITY = {"US02": "Americas", "US05": "Americas", "CH04": "EMEA",
                     "DE01": "EMEA", "FR03": "EMEA", "SG01": "APAC"}
+FX_TO_EUR = {"EUR": 1.00, "USD": 0.92, "CHF": 1.04, "SGD": 0.68}
+
+
+def convert(amount, from_currency, to_currency):
+    """Converts an amount between two currencies via their EUR rates."""
+    return amount * FX_TO_EUR[from_currency] / FX_TO_EUR[to_currency]
+
 
 WHOLESALERS_BY_DISTRIBUTOR = {
     "US05": ["McKesson Specialty Distribution", "AmerisourceBergen Pharma", "Cardinal Health East"],
@@ -82,7 +62,6 @@ def add_row(company, partner, gl_account, tx_type, amount, booking_text):
 
 
 def split_into_invoices(total, n, jitter=0.3):
-    """Break `total` into n randomly-sized invoice amounts that sum exactly to `total`."""
     weights = [random.uniform(1 - jitter, 1 + jitter) for _ in range(n)]
     weight_sum = sum(weights)
     amounts = [round(total * w / weight_sum, 2) for w in weights]
@@ -91,47 +70,45 @@ def split_into_invoices(total, n, jitter=0.3):
 
 
 # ------------------------------------------------------------------
-# 1) TARGET metrics per entity (deliberately including 1 outlier + 1 grey-zone case)
+# 1) TARGET metrics per entity - all figures are in the ENTITY'S OWN currency
 # ------------------------------------------------------------------
 distributor_targets = {
-    "US05": {"revenue": random.uniform(400_000, 460_000), "margin_pct": -0.8,       # OUTLIER: below Americas Min (0.3)
-             "sga_frac": random.uniform(0.09, 0.11), "otheropex_frac": random.uniform(0.025, 0.035),
-             "royalty_rate_pct": random.uniform(1.8, 2.2)},
+    "US05": {"revenue": random.uniform(400_000, 460_000), "margin_pct": random.uniform(0.5, 1.5), 
+             "sga_frac": random.uniform(0.09, 0.11), "otheropex_frac": random.uniform(0.025, 0.035)},
     "DE01": {"revenue": random.uniform(410_000, 470_000), "margin_pct": random.uniform(3.2, 3.9),
-             "sga_frac": random.uniform(0.08, 0.10), "otheropex_frac": random.uniform(0.02, 0.03),
-             "royalty_rate_pct": random.uniform(1.8, 2.2)},
+             "sga_frac": random.uniform(0.08, 0.10), "otheropex_frac": random.uniform(0.02, 0.03)},
     "FR03": {"revenue": random.uniform(430_000, 490_000), "margin_pct": random.uniform(2.5, 3.2),
-             "sga_frac": random.uniform(0.08, 0.10), "otheropex_frac": random.uniform(0.02, 0.03),
-             "royalty_rate_pct": 3.6},                                              # GREY ZONE: above global UQ (3.0), below Max (4.5)
+             "sga_frac": random.uniform(0.08, 0.10), "otheropex_frac": random.uniform(0.02, 0.03)},
     "SG01": {"revenue": random.uniform(360_000, 420_000), "margin_pct": random.uniform(3.2, 4.2),
-             "sga_frac": random.uniform(0.08, 0.10), "otheropex_frac": random.uniform(0.02, 0.03),
-             "royalty_rate_pct": random.uniform(2.0, 2.4)},
+             "sga_frac": random.uniform(0.08, 0.10), "otheropex_frac": random.uniform(0.02, 0.03)},
 }
 
 manufacturer_target = {
     "revenue": random.uniform(650_000, 800_000),
-    "markup_pct": random.uniform(6.0, 7.2),      # Full Cost Mark-up, inside EMEA CM benchmark 5.0-8.0
+    "markup_pct": random.uniform(6.0, 7.2),
     "sga_frac": random.uniform(0.03, 0.045), "rd_frac": random.uniform(0.01, 0.02),
     "otheropex_frac": random.uniform(0.02, 0.03),
-    "royalty_rate_pct": random.uniform(1.6, 2.2),
 }
 
 # ------------------------------------------------------------------
 # 2) Distribution: Principal -> Distributor (IC) + Distributor -> 3P
+#    distributor_cogs[d] is the distributor's COGS in ITS OWN currency.
+#    The journal invoice from the Principal must be FX-converted into the
+#    Principal's own currency (USD) - it is not the same raw number.
 # ------------------------------------------------------------------
 distributor_cogs = {}
-distributor_actual_revenue = {}
 
 for d in DISTRIBUTORS:
     t = distributor_targets[d]
-    cogs_target = t["revenue"] * (1 - t["margin_pct"] / 100 - t["sga_frac"] - t["otheropex_frac"])
-    distributor_cogs[d] = cogs_target
+    cogs_target_local = t["revenue"] * (1 - t["margin_pct"] / 100 - t["sga_frac"] - t["otheropex_frac"])
+    distributor_cogs[d] = cogs_target_local  # stays in distributor's own currency, used for entity_financials
 
-    for amount in split_into_invoices(cogs_target, random.randint(8, 11)):
+    cogs_target_usd = convert(cogs_target_local, CURRENCY_BY_ENTITY[d], CURRENCY_BY_ENTITY[PRINCIPAL])
+    for amount in split_into_invoices(cogs_target_usd, random.randint(16, 22)):
         add_row(PRINCIPAL, d, "4000", "Invoice", amount,
                 f"Verkauf Fertigarzneimittel an Vertriebsgesellschaft {d}")
 
-    n_3p = random.randint(10, 14)
+    n_3p = random.randint(20, 28)
     invoice_total = t["revenue"] * 1.01
     for amount in split_into_invoices(invoice_total, n_3p):
         customer = random.choice(WHOLESALERS_BY_DISTRIBUTOR[d])
@@ -139,33 +116,19 @@ for d in DISTRIBUTORS:
     credit_note = -round(t["revenue"] * 0.01, 2)
     add_row(d, "", "4000", "Credit Note", credit_note, "Gutschrift Retoure Grosshandel")
 
-    distributor_actual_revenue[d] = t["revenue"] * 1.01 + credit_note
-
 # ------------------------------------------------------------------
 # 3) Contract Manufacturing: Manufacturer -> Principal fee
+#    CH04 books its own fee revenue in CHF (its own currency) - self
+#    consistent, no conversion needed on this side.
 # ------------------------------------------------------------------
-for amount in split_into_invoices(manufacturer_target["revenue"], 6):
+for amount in split_into_invoices(manufacturer_target["revenue"], 12):
     add_row(MANUFACTURER, PRINCIPAL, "4100", "Invoice", amount, "Lohnfertigungsgebuehr API-Produktion")
 
 # ------------------------------------------------------------------
-# 4) IP / Licensing: Principal charges royalties (based on each licensee's own net sales)
-# ------------------------------------------------------------------
-for d in DISTRIBUTORS:
-    t = distributor_targets[d]
-    royalty_annual = distributor_actual_revenue[d] * t["royalty_rate_pct"] / 100
-    for quarter, amount in zip(["Q1", "Q2", "Q3", "Q4"], split_into_invoices(royalty_annual, 4, jitter=0.1)):
-        add_row(PRINCIPAL, d, "4200", "Invoice", amount, f"Lizenzgebuehr Marke/Patent {quarter} 2025 - {d}")
-
-royalty_annual_manufacturer = manufacturer_target["revenue"] * manufacturer_target["royalty_rate_pct"] / 100
-for quarter, amount in zip(["Q1", "Q2", "Q3", "Q4"], split_into_invoices(royalty_annual_manufacturer, 4, jitter=0.1)):
-    add_row(PRINCIPAL, MANUFACTURER, "4200", "Invoice", amount,
-            f"Lizenzgebuehr Herstellungs-Know-how {quarter} 2025 - {MANUFACTURER}")
-
-# ------------------------------------------------------------------
-# 5) Noise: unmapped GL account (4900) - intentional, for the error-handling chapter
+# 4) Noise: unmapped GL account (4900) - intentional, for the error-handling chapter
 # ------------------------------------------------------------------
 all_entities = [PRINCIPAL, MANUFACTURER] + DISTRIBUTORS
-for _ in range(16):
+for _ in range(32):
     company = random.choice(all_entities)
     partner = random.choice([e for e in all_entities if e != company] + [""])
     amount = round(random.uniform(200, 5_000), 2)
@@ -177,8 +140,7 @@ erp_df.to_excel(f"{OUT_DIR}/raw_erp_export.xlsx", sheet_name="Journal", index=Fa
 
 
 # ------------------------------------------------------------------
-# entity_financials.xlsx - a REAL simple P&L: one Revenue line, derived
-# from the SAME journal actuals so reconciliation ties out exactly.
+# entity_financials.xlsx - each entity's P&L in ITS OWN currency
 # ------------------------------------------------------------------
 def journal_revenue_sum(company, gl_accounts):
     mask = (erp_df.CompanyCode == company) & (erp_df.GLAccount.astype(str).isin(gl_accounts))
@@ -188,17 +150,16 @@ def journal_revenue_sum(company, gl_accounts):
 financials_rows = []
 for d in DISTRIBUTORS:
     t = distributor_targets[d]
-    revenue_actual = journal_revenue_sum(d, ["4000"])
+    revenue_actual = journal_revenue_sum(d, ["4000"])  # distributor's own 3P sales, already in its own currency
     financials_rows.append({
         "CompanyCode": d, "Period": "FY2025", "Revenue": revenue_actual,
-        "COGS": round(distributor_cogs[d], 2),
+        "COGS": round(distributor_cogs[d], 2),  # in distributor's own currency, matches the FX-converted journal invoice
         "SGA": round(revenue_actual * t["sga_frac"], 2),
         "RD": 0.0,
         "OtherOpex": round(revenue_actual * t["otheropex_frac"], 2),
     })
 
-cm_revenue_actual = journal_revenue_sum(MANUFACTURER, ["4100"])
-# Full Cost Mark-up = OperatingProfit / TotalCost  =>  OperatingProfit = markup * Revenue / (1 + markup)
+cm_revenue_actual = journal_revenue_sum(MANUFACTURER, ["4100"])  # CH04's own fee revenue, in CHF
 markup_frac = manufacturer_target["markup_pct"] / 100
 cm_operating_profit = markup_frac * cm_revenue_actual / (1 + markup_frac)
 cm_total_cost = cm_revenue_actual - cm_operating_profit
@@ -211,20 +172,23 @@ financials_rows.append({
     "OtherOpex": round(cm_total_cost * manufacturer_target["otheropex_frac"], 2),
 })
 
-principal_ic_revenue = journal_revenue_sum(PRINCIPAL, ["4000"])
-principal_licensing_revenue = journal_revenue_sum(PRINCIPAL, ["4200"])
-principal_revenue_total = round(principal_ic_revenue + principal_licensing_revenue, 2)
-raw_material_cost = cm_revenue_actual * random.uniform(0.08, 0.15)
-principal_cogs = cm_revenue_actual + raw_material_cost
+principal_revenue = journal_revenue_sum(PRINCIPAL, ["4000"])  # Principal's own IC sales, already in USD
+
+# The CM fee CH04 charges is in CHF - must be converted to USD before it
+# becomes part of the Principal's (USD) COGS.
+cm_fee_in_usd = convert(cm_revenue_actual, CURRENCY_BY_ENTITY[MANUFACTURER], CURRENCY_BY_ENTITY[PRINCIPAL])
+raw_material_cost = cm_fee_in_usd * random.uniform(0.08, 0.15)
+principal_cogs = cm_fee_in_usd + raw_material_cost
+
 principal_sga_frac = random.uniform(0.06, 0.08)
 principal_otheropex_frac = random.uniform(0.02, 0.03)
 principal_target_margin_frac = random.uniform(0.12, 0.18)
-principal_sga = principal_revenue_total * principal_sga_frac
-principal_otheropex = principal_revenue_total * principal_otheropex_frac
-principal_target_margin_amount = principal_revenue_total * principal_target_margin_frac
-principal_rd = principal_revenue_total - principal_cogs - principal_sga - principal_otheropex - principal_target_margin_amount
+principal_sga = principal_revenue * principal_sga_frac
+principal_otheropex = principal_revenue * principal_otheropex_frac
+principal_target_margin_amount = principal_revenue * principal_target_margin_frac
+principal_rd = principal_revenue - principal_cogs - principal_sga - principal_otheropex - principal_target_margin_amount
 financials_rows.append({
-    "CompanyCode": PRINCIPAL, "Period": "FY2025", "Revenue": principal_revenue_total,
+    "CompanyCode": PRINCIPAL, "Period": "FY2025", "Revenue": principal_revenue,
     "COGS": round(principal_cogs, 2), "SGA": round(principal_sga, 2),
     "RD": round(principal_rd, 2), "OtherOpex": round(principal_otheropex, 2),
 })
@@ -238,11 +202,10 @@ financials_df.to_excel(f"{OUT_DIR}/entity_financials.xlsx", sheet_name="Financia
 pd.DataFrame([
     {"GLAccount": "4000", "TransactionGroup": "Distribution"},
     {"GLAccount": "4100", "TransactionGroup": "Contract Manufacturing"},
-    {"GLAccount": "4200", "TransactionGroup": "IP / Licensing"},
 ]).to_excel(f"{OUT_DIR}/mapping_gl_accounts.xlsx", sheet_name="Mapping", index=False)
 
 # ------------------------------------------------------------------
-# benchmark_studies.xlsx - region-aware, with full quartile statistics
+# benchmark_studies.xlsx
 # ------------------------------------------------------------------
 pd.DataFrame([
     {"TransactionGroup": "Distribution", "Region": "EMEA", "BenchmarkMetric": "Operating Margin (%)",
@@ -257,13 +220,10 @@ pd.DataFrame([
     {"TransactionGroup": "Contract Manufacturing", "Region": "EMEA", "BenchmarkMetric": "Full Cost Mark-up (%)",
      "Min": 2.1, "LowerQuartile": 5.0, "Median": 6.4, "UpperQuartile": 8.0, "Max": 10.5,
      "NumberOfComparables": 12, "StudySource": "Contract Manufacturer Benchmark Study EMEA Pharma 2024", "Year": 2024},
-    {"TransactionGroup": "IP / Licensing", "Region": "Global", "BenchmarkMetric": "Royalty Rate (% of Net Sales)",
-     "Min": 0.2, "LowerQuartile": 1.0, "Median": 1.8, "UpperQuartile": 3.0, "Max": 4.5,
-     "NumberOfComparables": 9, "StudySource": "Comparable Uncontrolled Royalty Database 2024", "Year": 2024},
 ]).to_excel(f"{OUT_DIR}/benchmark_studies.xlsx", sheet_name="Benchmarks", index=False)
 
 # ------------------------------------------------------------------
-# entity_master.xlsx - now includes Region
+# entity_master.xlsx
 # ------------------------------------------------------------------
 pd.DataFrame([
     {"CompanyCode": "US02", "LegalEntityName": "PharmaCorp Global Principal Inc.",
@@ -281,19 +241,13 @@ pd.DataFrame([
 ]).to_excel(f"{OUT_DIR}/entity_master.xlsx", sheet_name="EntityMaster", index=False)
 
 # ------------------------------------------------------------------
-# fx_rates.xlsx - group reporting currency = EUR
+# fx_rates.xlsx
 # ------------------------------------------------------------------
 pd.DataFrame([
-    {"Currency": "EUR", "RateToEUR": 1.00, "Period": "FY2025"},
-    {"Currency": "USD", "RateToEUR": 0.92, "Period": "FY2025"},
-    {"Currency": "CHF", "RateToEUR": 1.04, "Period": "FY2025"},
-    {"Currency": "SGD", "RateToEUR": 0.68, "Period": "FY2025"},
+    {"Currency": c, "RateToEUR": r, "Period": "FY2025"} for c, r in FX_TO_EUR.items()
 ]).to_excel(f"{OUT_DIR}/fx_rates.xlsx", sheet_name="FxRates", index=False)
 
 print("Sample data created:")
 print(" - raw_erp_export.xlsx      ", erp_df.shape)
 print(" - entity_financials.xlsx   ", financials_df.shape)
-print(" - benchmark_studies.xlsx   ", "6 rows (region-aware + quartiles)")
-print(" - entity_master.xlsx       ", "6 entities (incl. Region)")
-print(" - fx_rates.xlsx            ", "4 currencies")
-print("\nJournal total amount:", round(erp_df["Amount"].sum(), 2))
+print("\nJournal total amount (mixed currencies):", round(erp_df["Amount"].sum(), 2))

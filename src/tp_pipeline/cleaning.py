@@ -10,6 +10,12 @@ Python concepts covered:
   - The map() Function: the same enrichment expressed without an explicit loop
 
 """
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from tp_pipeline.exceptions import MappingNotFoundError
+
 def clean_company_code(raw_code):
     return str(raw_code).strip().upper()
 
@@ -43,13 +49,10 @@ def get_transaction_group(gl_account, gl_mapping):
         raise MappingNotFoundError(f"GL account '{gl_account}' has no entry in mapping_gl_accounts.xlsx")
 
 if __name__=="__main__":
-    import sys
-    from pathlib import Path
-    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+   
     
     from tp_pipeline.data_io import read_entity_master, read_mapping_gl_accounts, read_erp_export
     from tp_pipeline.lookups import build_gl_account_mapping_lookup
-    from tp_pipeline.exceptions import MappingNotFoundError
 
     gl_mapping = build_gl_account_mapping_lookup(read_mapping_gl_accounts())
     erp_df = read_erp_export()

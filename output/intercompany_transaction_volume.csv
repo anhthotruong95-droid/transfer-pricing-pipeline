@@ -1,0 +1,6 @@
+ReportingEntity,RoleOfReportingEntity,TransactionPartner,RoleOfTransactionPartner,TransactionGroup,Currency,TotalAmountLC,TotalAmountEUR
+CH04,Contract Manufacturer,US02,Principal,Contract Manufacturing,CHF,797329.01,829222.17
+US02,Principal,DE01,Distributor,Distribution,USD,409386.67,376635.74
+US02,Principal,FR03,Distributor,Distribution,USD,439589.46,404422.3
+US02,Principal,SG01,Distributor,Distribution,USD,228407.64,210135.03
+US02,Principal,US05,Distributor,Distribution,USD,363610.23,334521.41
