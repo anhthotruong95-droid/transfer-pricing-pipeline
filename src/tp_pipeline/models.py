@@ -116,7 +116,7 @@ class TPDataset:
 if __name__ == "__main__":
     tx = Transaction(
         transaction_id="TX00001", posting_date="2025-04-11",
-        booking_text="Verkauf Fertigarzneimittel an Vertriebsgesellschaft DE01",
+        booking_text="Sale of finished pharmaceuticals to distributor DE01",
         company_code="US02", partner_company_code="DE01", gl_account="4000",
         transaction_group="Distribution", transaction_type="Invoice",
         amount=55471.96, currency="USD", is_intercompany=True
