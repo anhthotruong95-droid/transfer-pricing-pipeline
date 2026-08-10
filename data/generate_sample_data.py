@@ -106,15 +106,15 @@ for d in DISTRIBUTORS:
     cogs_target_usd = convert(cogs_target_local, CURRENCY_BY_ENTITY[d], CURRENCY_BY_ENTITY[PRINCIPAL])
     for amount in split_into_invoices(cogs_target_usd, random.randint(16, 22)):
         add_row(PRINCIPAL, d, "4000", "Invoice", amount,
-                f"Verkauf Fertigarzneimittel an Vertriebsgesellschaft {d}")
+                f"Sale of finished pharmaceuticals to distributor {d}")
 
     n_3p = random.randint(20, 28)
     invoice_total = t["revenue"] * 1.01
     for amount in split_into_invoices(invoice_total, n_3p):
         customer = random.choice(WHOLESALERS_BY_DISTRIBUTOR[d])
-        add_row(d, "", "4000", "Invoice", amount, f"Verkauf Fertigware an Grosshaendler {customer}")
+        add_row(d, "", "4000", "Invoice", amount, f"Sale of finished goods to wholesaler {customer}")
     credit_note = -round(t["revenue"] * 0.01, 2)
-    add_row(d, "", "4000", "Credit Note", credit_note, "Gutschrift Retoure Grosshandel")
+    add_row(d, "", "4000", "Credit Note", credit_note, "Credit note wholesale return")
 
 # ------------------------------------------------------------------
 # 3) Contract Manufacturing: Manufacturer -> Principal fee
@@ -122,7 +122,7 @@ for d in DISTRIBUTORS:
 #    consistent, no conversion needed on this side.
 # ------------------------------------------------------------------
 for amount in split_into_invoices(manufacturer_target["revenue"], 12):
-    add_row(MANUFACTURER, PRINCIPAL, "4100", "Invoice", amount, "Lohnfertigungsgebuehr API-Produktion")
+    add_row(MANUFACTURER, PRINCIPAL, "4100", "Invoice", amount, "Contract manufacturing fee API production")
 
 # ------------------------------------------------------------------
 # 4) Noise: unmapped GL account (4900) - intentional, for the error-handling chapter
@@ -133,7 +133,7 @@ for _ in range(32):
     partner = random.choice([e for e in all_entities if e != company] + [""])
     amount = round(random.uniform(200, 5_000), 2)
     add_row(company, partner, "4900", random.choice(["Invoice", "Credit Note"]), amount,
-            "Sonstige Kosten - noch nicht klassifiziert")
+            "Other costs - not classified")
 
 erp_df = pd.DataFrame(rows).sort_values("TransactionID").reset_index(drop=True)
 erp_df.to_excel(f"{OUT_DIR}/raw_erp_export.xlsx", sheet_name="Journal", index=False)
