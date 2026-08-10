@@ -51,16 +51,41 @@ transfer-pricing-pipeline/
 └── requirements.txt
 ```
 
+## Data flow diagram
+
+```mermaid
+flowchart LR
+    GENERATE_DATA["generate_sample_data.py"] --> EXCEL1["benchmark_studies.xlsx"]
+    GENERATE_DATA["generate_sample_data.py"] --> EXCEL2["entity_financials.xlsx"]
+    GENERATE_DATA["generate_sample_data.py"] --> EXCEL3["entity_master.xlsx"]
+    GENERATE_DATA["generate_sample_data.py"] --> EXCEL4["fx_rates.xlsx"]
+    GENERATE_DATA["generate_sample_data.py"] --> EXCEL5["raw_erp_export.xlsx"]
+
+    EXCEL1 --> DATAIO_LOOKUPS["data_io.py + lookups.py"]
+    EXCEL2 --> DATAIO_LOOKUPS
+    EXCEL3 --> DATAIO_LOOKUPS
+    EXCEL4 --> DATAIO_LOOKUPS
+    EXCEL5 --> DATAIO_LOOKUPS
+
+    DATAIO_LOOKUPS --> CLEANING["cleaning.py + exceptions.py"]
+    CLEANING --> MODELS_ROLES["models.py + roles.py"]
+    MODELS_ROLES --> BENCHMARKING["benchmarking.py"]
+    BENCHMARKING --> RECONCILATION["reconciliation.py"]
+
+    RECONCILATION --> CSV1["financial_statements.csv"]
+    RECONCILATION --> CSV2["intercompany_transaction_volume.csv"]
+    RECONCILATION --> CSV3["unmapped_transactions.csv"]
+```
+
 ## How the pipeline works
 
-1. Read all 5 Excel source files
-2. Flag journal rows Intercompany vs. Third Party
-3. Clean each row, derive its transaction group from the GL account mapping,
-   route unmapped GL accounts to a data-quality log
-4. Derive each entity's functional role from its own invoicing pattern
-5. Calculate Operating Margin (Distributors) or Full Cost Mark-up (Contract
-   Manufacturer), classify each against its region-specific benchmark
-6. Reconcile the journal total against the financials total
+1. Generate 5 Excel source files (generate_sample_data.py)
+2. Read Files (data_io.py) and build in-memory lookups (lookups.py)
+3. Clean each row, derive its transaction group from the GL account mapping (cleaning.py),
+   route unmapped GL accounts to a data-quality log (exceptions.py)
+4. Derive each entity's functional role from its own invoicing pattern (roles.py). Calculate Operating Margin (Distributors) or Full Cost      Mark-up (Contract Manufacturer) as properties on the Entity class (models.py).")
+5. Classify each entity against its region-specific benchmark using its calculated PLI (benchmarking.py)
+6. Reconcile the journal total against the financials total (reconciliation.py)
 7. Export:
    - `output/financial_statements.csv` - one row per entity with full P&L and benchmark result
    - `output/intercompany_transaction_volume.csv` - IC transaction volume by reporting entity/partner/role
@@ -79,4 +104,4 @@ python3 main.py                         # run the full pipeline
 ```bash
 pip install pytest
 pytest tests/
-`````
+```
