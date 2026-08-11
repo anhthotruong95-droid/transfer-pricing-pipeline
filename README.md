@@ -83,7 +83,7 @@ flowchart LR
 2. Read Files (data_io.py) and build in-memory lookups (lookups.py)
 3. Clean each row, derive its transaction group from the GL account mapping (cleaning.py),
    route unmapped GL accounts to a data-quality log (exceptions.py)
-4. Derive each entity's functional role from its own invoicing pattern (roles.py). Calculate Operating Margin (Distributors) or Full Cost      Mark-up (Contract Manufacturer) as properties on the Entity class (models.py).")
+4. Derive each entity's functional role from its own invoicing pattern (roles.py). Calculate Operating Margin (Distributors) or Full Cost      Mark-up (Contract Manufacturer) as properties on the Entity class (models.py).
 5. Classify each entity against its region-specific benchmark using its calculated PLI (benchmarking.py)
 6. Reconcile the journal total against the financials total (reconciliation.py)
 7. Export:
@@ -105,3 +105,7 @@ python3 main.py                         # run the full pipeline
 pip install pytest
 pytest tests/
 ```
+## Next steps
+
+Load pipeline outputs into a lightweight SQLite database and add example
+SQL queries (joins, aggregations, window functions) for further analysis
