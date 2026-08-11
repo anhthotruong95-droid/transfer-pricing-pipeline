@@ -28,7 +28,7 @@ against **region-specific** benchmark studies.
 ```text
 transfer-pricing-pipeline/
 ├── data/
-│   ├── generate_sample_data.py   # creates all 5 Excel inputs
+│   ├── generate_sample_data.py   # creates all 6 Excel inputs
 │   ├── raw_erp_export.xlsx       # SAP-style journal
 │   ├── entity_financials.xlsx    # simple P&L per entity, in local currency
 │   ├── mapping_gl_accounts.xlsx  # GLAccount -> TransactionGroup
@@ -36,7 +36,7 @@ transfer-pricing-pipeline/
 │   ├── entity_master.xlsx        # legal entity master data incl. Region
 │   └── fx_rates.xlsx             # currency -> EUR conversion rate
 ├── src/tp_pipeline/
-│   ├── data_io.py                # reads all 5 Excel files
+│   ├── data_io.py                # reads all 6 Excel files
 │   ├── lookups.py                # builds fast in-memory lookups
 │   ├── cleaning.py               # row cleaning + error handling
 │   ├── exceptions.py             # custom exception classes
@@ -59,13 +59,15 @@ flowchart LR
     GENERATE_DATA["generate_sample_data.py"] --> EXCEL2["entity_financials.xlsx"]
     GENERATE_DATA["generate_sample_data.py"] --> EXCEL3["entity_master.xlsx"]
     GENERATE_DATA["generate_sample_data.py"] --> EXCEL4["fx_rates.xlsx"]
-    GENERATE_DATA["generate_sample_data.py"] --> EXCEL5["raw_erp_export.xlsx"]
+    GENERATE_DATA["generate_sample_data.py"] --> EXCEL5["mapping_gl_accounts.xlsx"]
+    GENERATE_DATA["generate_sample_data.py"] --> EXCEL6["raw_erp_export.xlsx"]
 
     EXCEL1 --> DATAIO_LOOKUPS["data_io.py + lookups.py"]
     EXCEL2 --> DATAIO_LOOKUPS
     EXCEL3 --> DATAIO_LOOKUPS
     EXCEL4 --> DATAIO_LOOKUPS
     EXCEL5 --> DATAIO_LOOKUPS
+    EXCEL6 --> DATAIO_LOOKUPS
 
     DATAIO_LOOKUPS --> CLEANING["cleaning.py + exceptions.py"]
     CLEANING --> MODELS_ROLES["models.py + roles.py"]
@@ -79,7 +81,7 @@ flowchart LR
 
 ## How the pipeline works
 
-1. Generate 5 Excel source files (generate_sample_data.py)
+1. Generate 6 Excel source files (generate_sample_data.py)
 2. Read Files (data_io.py) and build in-memory lookups (lookups.py)
 3. Clean each row, derive its transaction group from the GL account mapping (cleaning.py),
    route unmapped GL accounts to a data-quality log (exceptions.py)
