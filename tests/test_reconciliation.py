@@ -10,14 +10,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 import pandas as pd
-from tp_pipeline.reconciliation import flag_intercompany, reconciles
-
-
-def test_flag_intercompany_true_when_partner_filled():
-    df = pd.DataFrame({"PartnerCompanyCode": ["DE01", "", None]})
-    result = flag_intercompany(df).tolist()
-    assert result == [True, False, False], f"Expected [True, False, False], got {result!r}"
-
+from tp_pipeline.reconciliation import reconciles
 
 def test_reconciles_within_tolerance():
     result = reconciles(1000.0, 1000.5, tolerance=1.0)

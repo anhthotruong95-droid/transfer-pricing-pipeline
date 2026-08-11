@@ -19,7 +19,7 @@ from tp_pipeline.lookups import (build_gl_account_mapping_lookup, build_benchmar
                                   build_entity_master_lookup, build_fx_rate_lookup)
 from tp_pipeline.cleaning import clean_transaction_row, get_transaction_group
 from tp_pipeline.exceptions import MappingNotFoundError
-from tp_pipeline.reconciliation import flag_intercompany, reconciles
+from tp_pipeline.reconciliation import reconciles
 from tp_pipeline.benchmarking import classify_against_benchmark
 from tp_pipeline.models import Transaction, Entity, TPDataset
 from tp_pipeline.roles import derive_functional_roles
@@ -29,12 +29,16 @@ OUTPUT_FILE = OUTPUT_DIR / "financial_statements.csv"
 UNMAPPED_FILE = OUTPUT_DIR / "unmapped_transactions.csv"
 IC_VOLUME_FILE = OUTPUT_DIR / "intercompany_transaction_volume.csv"
 
-# The partner's role within a single transaction is fully determined by the
-# transaction group itself (e.g. whoever pays a manufacturing fee is, by
-# definition, the Principal in that transaction) - no lookup needed.
-PARTNER_ROLE_BY_GROUP = {
-    "Distribution": "Distributor",
-    "Contract Manufacturing": "Principal",
+# Each transaction group has exactly two roles that always pair up. A
+# company's own role in a group is derived from its own invoicing pattern
+# (roles.py) - but the Principal never itself invoices under the Contract
+# Manufacturing GL account (it only receives that invoice), so its role in
+# THAT group cannot be derived the same way. Instead, once we know one
+# side's role, the other side's role is simply the remaining role in the
+# pair.
+ROLE_PAIRS = {
+    "Distribution": {"Principal", "Distributor"},
+    "Contract Manufacturing": {"Principal", "Contract Manufacturer"},
 }
 
 
@@ -43,6 +47,13 @@ def role_of_entity_in_group(company_code, group, dataset):
     if entity is None:
         return "Unknown"
     return entity.functional_role.get(group, "Unknown")
+
+
+def partner_role_in_group(reporting_entity_role, group):
+    """Given one party's role in a group, returns the counterpart role."""
+    pair = ROLE_PAIRS.get(group, set())
+    other_roles = pair - {reporting_entity_role}
+    return next(iter(other_roles), "Unknown")
 
 
 def build_intercompany_volume_summary(dataset, fx_rate_lookup):
@@ -59,11 +70,12 @@ def build_intercompany_volume_summary(dataset, fx_rate_lookup):
 
     rows = []
     for (reporting_entity, partner, group, currency), total_lc in summary.items():
+        reporting_role = role_of_entity_in_group(reporting_entity, group, dataset)
         rows.append({
             "ReportingEntity": reporting_entity,
-            "RoleOfReportingEntity": role_of_entity_in_group(reporting_entity, group, dataset),
+            "RoleOfReportingEntity": reporting_role,
             "TransactionPartner": partner,
-            "RoleOfTransactionPartner": PARTNER_ROLE_BY_GROUP.get(group, "Unknown"),
+            "RoleOfTransactionPartner": partner_role_in_group(reporting_role, group),
             "TransactionGroup": group,
             "Currency": currency,
             "TotalAmountLC": round(total_lc, 2),

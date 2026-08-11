@@ -38,7 +38,6 @@ if __name__ == "__main__":
         {"CompanyCode": "US02", "PartnerCompanyCode": "DE01", "GLAccount": "4000"},
         {"CompanyCode": "US02", "PartnerCompanyCode": "FR03", "GLAccount": "4000"},
         {"CompanyCode": "CH04", "PartnerCompanyCode": "US02", "GLAccount": "4100"},
-        {"CompanyCode": "CH04", "PartnerCompanyCode": "", "GLAccount": "4000"},
     ]
     print(derive_functional_roles("US02", sample_transactions, gl_mapping))
     print(derive_functional_roles("CH04", sample_transactions, gl_mapping))

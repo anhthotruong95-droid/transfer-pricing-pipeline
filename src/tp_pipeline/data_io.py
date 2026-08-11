@@ -16,24 +16,19 @@ def read_erp_export(path: Path= DATA_DIR / "raw_erp_export.xlsx") -> pd.DataFram
   return pd.read_excel(path, sheet_name="Journal")
 
 def read_benchmark_studies(path: Path= DATA_DIR / "benchmark_studies.xlsx") -> pd.DataFrame:
-   return pd.read_excel(path,"Benchmarks")
+   return pd.read_excel(path,sheet_name="Benchmarks")
 
 def read_entity_financials(path: Path= DATA_DIR / "entity_financials.xlsx") -> pd.DataFrame:
-   return pd.read_excel(path,"Financials")
+   return pd.read_excel(path,sheet_name="Financials")
 
 def read_fx_rates(path: Path= DATA_DIR / "fx_rates.xlsx") -> pd.DataFrame:
-   return pd.read_excel(path,"FxRates")
+   return pd.read_excel(path,sheet_name="FxRates")
 
 def read_entity_master(path: Path= DATA_DIR / "entity_master.xlsx") -> pd.DataFrame:
-   return pd.read_excel(path,"EntityMaster")
+   return pd.read_excel(path,sheet_name="EntityMaster")
 
 def read_mapping_gl_accounts(path: Path= DATA_DIR / "mapping_gl_accounts.xlsx") -> pd.DataFrame:
-   return pd.read_excel(path,"Mapping")
-
-def stream_clean_transactions(rows: list[dict], gl_mapping: dict[str, str]): 
-    from tp_pipeline.cleaning import clean_transaction_row
-    for row in rows:
-        yield clean_transaction_row(row, gl_mapping)
+   return pd.read_excel(path,sheet_name="Mapping")
 
 if __name__ == "__main__":
     df = read_erp_export()

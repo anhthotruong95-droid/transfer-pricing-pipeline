@@ -107,9 +107,6 @@ class TPDataset:
     def register_entity(self, entity):
         self.entities[entity.company_code]=entity
 
-    def grand_total_journal(self):
-        return round(sum(t.amount for t in self.transactions), 2)
-
     def grand_total_revenue(self):
         return round(sum(e.revenue for e in self.entities.values()), 2)
 
@@ -139,5 +136,4 @@ if __name__ == "__main__":
     dataset.add_transaction(tx)
     dataset.register_entity(de01)
 
-    print(dataset.grand_total_journal())
     print(dataset.grand_total_revenue())

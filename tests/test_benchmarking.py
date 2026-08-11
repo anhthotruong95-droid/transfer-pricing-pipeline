@@ -1,30 +1,43 @@
 """
 test_benchmarking.py
 -------------------------
-Unit tests for tp_pipeline.benchmarking: operating margin / full cost
-markup calculations and the Within/Out of Range classification.
+Unit tests for the Transfer Pricing benchmarking logic: margin/markup
+calculation (Entity properties in models.py) and the Within/Out of
+Range classification (benchmarking.py).
 """
-
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
-from tp_pipeline.benchmarking import (calculate_operating_margin_pct, calculate_full_cost_markup_pct,
-                                       classify_against_benchmark)
+from tp_pipeline.models import Entity
+from tp_pipeline.benchmarking import classify_against_benchmark
+
+
+def _make_entity(revenue, cogs, sga, rd, other_opex):
+    entity = Entity(company_code="TEST", entity_name="Test Entity",
+                     country_name="Testland", region="Test", currency="EUR")
+    entity.load_financials({
+        "Revenue": revenue, "COGS": cogs, "SGA": sga, "RD": rd, "OtherOpex": other_opex,
+        "Period": "FY2025",
+    })
+    return entity
 
 
 def test_operating_margin_basic():
-    result = calculate_operating_margin_pct(revenue=100, cogs=70, sga=10, rd=0, other_opex=5)
+    entity = _make_entity(revenue=100, cogs=70, sga=10, rd=0, other_opex=5)
+    result = entity.operating_margin_pct
     assert result == 15.0, f"Expected 15.0, got {result!r}"
 
 
 def test_operating_margin_zero_revenue():
-    result = calculate_operating_margin_pct(revenue=0, cogs=10, sga=5, rd=0, other_opex=0)
+    entity = _make_entity(revenue=0, cogs=10, sga=5, rd=0, other_opex=0)
+    result = entity.operating_margin_pct
     assert result == 0.0, f"Expected 0.0, got {result!r}"
 
 
 def test_full_cost_markup_basic():
-    result = calculate_full_cost_markup_pct(revenue=108, cogs=80, sga=10, rd=5, other_opex=5)
+    entity = _make_entity(revenue=108, cogs=80, sga=10, rd=5, other_opex=5)
+    result = entity.full_cost_markup_pct
     assert result == 8.0, f"Expected 8.0, got {result!r}"
 
 

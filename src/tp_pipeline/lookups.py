@@ -58,8 +58,8 @@ def build_fx_rate_lookup(fx_df):
 
 
 def lookup_benchmark(transaction_group, region, benchmark_lookup):
-    """Looks up a benchmark by (transaction group, region), falling back to 'Global'."""
-    return benchmark_lookup.get((transaction_group, region)) or benchmark_lookup.get((transaction_group, "Global"))
+    """Looks up a benchmark by (transaction group, region)."""
+    return benchmark_lookup.get((transaction_group, region))
 
 
 if __name__ == "__main__":
@@ -72,4 +72,3 @@ if __name__ == "__main__":
     print(build_entity_master_lookup(read_entity_master())["US02"])
     print(build_fx_rate_lookup(read_fx_rates()))
     benchmark_lookup = build_benchmark_lookup(read_benchmark_studies())
-    print(lookup_benchmark("IP / Licensing", "APAC", benchmark_lookup))
