@@ -107,5 +107,5 @@ pytest tests/
 ```
 ## Next steps
 
-- Load pipeline outputs into a lightweight SQLite database and add example
-  SQL queries (joins, aggregations, window functions) for further analysis
+Load pipeline outputs into a lightweight SQLite database and add example
+SQL queries (joins, aggregations, window functions) for further analysis
