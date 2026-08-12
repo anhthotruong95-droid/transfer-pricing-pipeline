@@ -53,6 +53,8 @@ transfer-pricing-pipeline/
 
 ## Data flow diagram
 
+*If the diagram doesn't render, just refresh the page.*
+
 ```mermaid
 flowchart LR
     GENERATE_DATA["generate_sample_data.py"] --> EXCEL1["benchmark_studies.xlsx"]
@@ -72,11 +74,11 @@ flowchart LR
     DATAIO_LOOKUPS --> CLEANING["cleaning.py + exceptions.py"]
     CLEANING --> MODELS_ROLES["models.py + roles.py"]
     MODELS_ROLES --> BENCHMARKING["benchmarking.py"]
-    BENCHMARKING --> RECONCILATION["reconciliation.py"]
+    BENCHMARKING --> RECONCILIATION["reconciliation.py"]
 
-    RECONCILATION --> CSV1["financial_statements.csv"]
-    RECONCILATION --> CSV2["intercompany_transaction_volume.csv"]
-    RECONCILATION --> CSV3["unmapped_transactions.csv"]
+    RECONCILIATION --> CSV1["financial_statements.csv"]
+    RECONCILIATION --> CSV2["intercompany_transaction_volume.csv"]
+    RECONCILIATION --> CSV3["unmapped_transactions.csv"]
 ```
 
 ## How the pipeline works
