@@ -17,3 +17,6 @@ Thumbs.db
 
 # Optional: uncomment if you don't want generated outputs in the repo
 # output/*.csv
+
+# Generated SQLite database (rebuilt fresh on every pipeline run)
+output/tp_pipeline.db
