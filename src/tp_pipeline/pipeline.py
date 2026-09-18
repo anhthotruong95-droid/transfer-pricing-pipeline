@@ -158,6 +158,7 @@ def run_pipeline():
         benchmark_median = None
         benchmark_upper_quartile = None
         benchmark_max = None
+        benchmark_study_source= None
 
         if is_distributor:
             benchmark = lookup_benchmark("Distribution", entity.region, benchmark_lookup)
@@ -169,6 +170,7 @@ def run_pipeline():
                 benchmark_upper_quartile = benchmark["upper_quartile"]
                 benchmark_max = benchmark["max"]
                 pli_indicator = "Operating Margin (%)"
+                benchmark_study_source = benchmark["study_source"]
 
         if is_manufacturer:
             benchmark = lookup_benchmark("Contract Manufacturing", entity.region, benchmark_lookup)
@@ -180,6 +182,7 @@ def run_pipeline():
                 benchmark_upper_quartile = benchmark["upper_quartile"]
                 benchmark_max = benchmark["max"]
                 pli_indicator = "Full Cost Mark-up (%)"
+                benchmark_study_source = benchmark["study_source"]
 
         summary_rows.append({
             "CompanyCode": entity.company_code,
@@ -187,6 +190,7 @@ def run_pipeline():
             "Region": entity.region,
             "Country": entity.country_name,
             "Currency": entity.currency,
+            "Period": entity.period,
             "FunctionalRole": ", ".join(entity.functional_role.values()),
             "RevenueLC": entity.revenue_lc,
             "RevenueEUR": entity.revenue_eur(fx_rate_lookup),
@@ -209,6 +213,7 @@ def run_pipeline():
             "BenchmarkUpperQuartile": benchmark_upper_quartile,
             "BenchmarkMax": benchmark_max,
             "BenchmarkStatus": benchmark_status,
+            "BenchmarkStudySource": benchmark_study_source,
         })
 
     print("Step 4 done - metrics calculated and classified")
