@@ -21,3 +21,11 @@ if __name__ == "__main__":
     print(final_table.to_string(index=False))
     print("\nIntercompany transaction volume:")
     print(ic_volume_table.to_string(index=False))
+
+    try:
+        from tp_pipeline.generate_report import main as generate_report
+        print("\nGenerating charts and PDF report...")
+        generate_report()
+    except ImportError:
+        print("\nSkipping report generation (matplotlib/seaborn/reportlab not installed - "
+              "run: pip install matplotlib seaborn reportlab)")

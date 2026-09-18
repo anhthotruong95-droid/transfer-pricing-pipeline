@@ -19,7 +19,8 @@ def build_benchmark_lookup(benchmark_df):
             "median": row["Median"],
             "upper_quartile": row["UpperQuartile"],
             "max": row["Max"],
-            "year": row["Year"]
+            "year": row["Year"],
+            "study_source": row["StudySource"]
         }
     return lookup
 
